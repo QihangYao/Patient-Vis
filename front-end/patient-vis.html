@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/dc@3/dc.css" />
+    <script src="https://unpkg.com/d3@5/dist/d3.js"></script>
+    <script src="https://unpkg.com/crossfilter2@1.4/crossfilter.js"></script>
+    <script src="https://unpkg.com/dc@3/dc.js"></script>
+    <style>
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div id="patient-list"> Patient List </div>
+            <div id="patient-info"> Patient Information </div>
+        </div>
+        <div class="row">
+            <div id="patient-timeline"> <span> TimeLine </span> </div>
+        </div>
+        <div class="row">
+            <div id="patient-vitals"> Vitals
+                <div id="patient-vitals0"> </div>
+                <div id="patient-vitals1"> </div>
+                <div id="patient-vitals2"> </div>
+                <div id="patient-vitals3"> </div>
+                <div id="patient-vitals4"> </div>
+                <div id="patient-vitals5"> </div>
+                <div id="patient-vitals6"> </div>
+                <div id="patient-vitals7"> </div>
+            </div>
+            <div id="patient-labs">Labs </div>
+            <div id="patient-notes"> Notes </div>
+        </div>
+    </div>
+    <script>
+
+        // Possible categories of events
+        var categories = ["Vitals", "Other", "Labs"];
+        var vitals = ["Temperature", "Heart Rate",
+            "Systolic blood pressure", "Diastolic blood pressure",
+            "Mean blood pressure", "Respiratory rate",
+            "Oxygen saturation", "Urine output"];
+        var vitalUnits = ["C", "bpm", "mmHg", "mmHg", "mmHg", "bpm", "%", ""];
+        var vitalMins = [30, 40, 80, 40, 60, 10, 70, 0];
+        var vitalMaxs = [40, 160, 200, 100, 150, 40, 140, 1000];
+
+
+        // Definition of charts
+        var patientList = dc.dataTable('#dc-data-table');
+        var patientInfo = dc.dataTable('#patient-info');
+        var patientTimeLine = dc.barChart('#patient-timeline');
+        var patientVitals = vitals.map(function (d, i) {
+            // Create a chart for each vital
+            return dc.lineChart('#patient-vitals' + i);
+        });
+        var patientLabs = dc.dataTable('#patient-labs');
+        var patientNotes = dc.dataTable('#patient-notes');
+
+        d3.json('test.json').then(function (data) {
+
+            console.log(data);
+
+            /* Here we deal with events */
+
+            // Parse the datetime for events
+            var dateFormatSpecifier = '%Y-%m-%d %H:%M:%S UTC';
+            var dateFormat = d3.timeFormat(dateFormatSpecifier);
+            var dateFormatParser = d3.timeParse(dateFormatSpecifier);
+
+            var events = data.events;
+            events.forEach(function (d) {
+                d.dd = dateFormatParser(d.chart_time);
+                d.hour = d3.timeHour(d.dd);
+                d.day = d3.timeDay(d.dd);
+            });
+
+            var ndx = crossfilter(events);
+            var all = ndx.groupAll();
+
+            var dailyDimension = ndx.dimension(function (d) {
+                return d.day;
+            });
+            var hourlyDimension = ndx.dimension(function (d) {
+                return d.hour;
+            });
+            var timeDimension = ndx.dimension(function (d) {
+                return d.dd;
+            });
+
+            var countByHourCategoryGroup = hourlyDimension.group().reduce(
+                function (p, v) {
+                    ++p.count;
+                    categories.forEach(function (d, i) {
+                        if (v.category == d) {
+                            p.countByCategory[i] += 1;
+                        }
+                    })
+                    return p;
+                },
+                function (p, v) {
+                    --p.count;
+                    categories.forEach(function (d, i) {
+                        if (v.category == d) {
+                            p.countByCategory[i] -= 1;
+                        }
+                    })
+                    return p;
+                },
+                function () {
+                    return {
+                        count: 0,
+                        countByCategory: [0, 0, 0]
+                    };
+                }
+            );
+            var averageByHourVitalGroup = hourlyDimension.group().reduce(
+                function (p, v) {
+                    vitals.forEach(function (d, i) {
+                        if (v.key == d) {
+                            p.sumVitals[i] += v.value_num;
+                            p.countVitals[i] += 1;
+                            p.averageVitals[i] = p.sumVitals[i] / p.countVitals[i];
+                        }
+                    })
+                    return p;
+                },
+                function (p, v) {
+                    vitals.forEach(function (d, i) {
+                        if (v.key == d) {
+                            p.sumVitals[i] -= v.value_num;
+                            p.countVitals[i] -= 1;
+                            p.averageVitals[i] = p.sumVitals[i] / p.countVitals[i];
+                        }
+                    });
+                    return p;
+                },
+                function () {
+                    return {
+                        sumVitals: Array(vitals.length).fill(0),
+                        countVitals: Array(vitals.length).fill(0),
+                        averageVitals: Array(vitals.length).fill(0)
+                    };
+                }
+
+            )
+
+            // Patient timeline by hours
+            patientTimeLine
+                .width(800)
+                .height(200)
+                .transitionDuration(1000)
+                .margins({ top: 0, bottom: 20, left: 40, right: 40 })
+                .dimension(hourlyDimension)
+                .mouseZoomable(true)
+
+                .x(d3.scaleTime().domain([d3.min(events, function (d) {
+                    return d.dd;
+                }), d3.max(events, function (d) { return d.dd; })]))
+                .round(d3.timeHour.round)
+                .alwaysUseRounding(true)
+                .xUnits(d3.timeHours)
+                .elasticY(true)
+                .renderHorizontalGridLines(true)
+                .legend(dc.legend().x(700).y(10).itemHeight(13).gap(5))
+                .yAxisLabel("Event Count")
+
+                .group(countByHourCategoryGroup, categories[0], function (d) {
+                    return d.value.countByCategory[0];
+                })
+                .stack(countByHourCategoryGroup, categories[1], function (d) {
+                    return d.value.countByCategory[1];
+                })
+                .stack(countByHourCategoryGroup, categories[2], function (d) {
+                    return d.value.countByCategory[2];
+                })
+                .centerBar(true)
+                .gap(1);
+
+            patientTimeLine.render();
+
+            // Vitals in precise hours
+            vitals.forEach(function (d, i) {
+                patientVitals[i]
+                    .width(400)
+                    .height(100)
+                    .margins({ top: 10, bottom: 20, left: 40, right: 10 })
+                    .dimension(hourlyDimension)
+
+                    .rangeChart(patientTimeLine)
+                    .x(d3.scaleTime().domain([d3.min(events, function (d) {
+                        return d.dd;
+                    }), d3.max(events, function (d) { return d.dd; })]))
+                    .y(d3.scaleLinear().domain([vitalMins[i], vitalMaxs[i]]))
+                    .renderHorizontalGridLines(true)
+                    .defined(function (d) {
+                        return d.y != 0;
+                    })
+
+                    .brushOn(false)
+                    .yAxisLabel(vitals[i])
+
+                    .group(averageByHourVitalGroup)
+                    .valueAccessor(function (d) {
+                        return d.value.averageVitals[i];
+                    })
+            });
+
+
+            vitals.forEach(function (d, i) {
+                patientVitals[i].render();
+            })
+
+            console.log("Here");
+
+        })
+    </script>
+</body>
