@@ -2,71 +2,86 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Patient-Vis </title>
+    <link rel="stylesheet" href="./libs/bulma-0.8.0/css/bulma.css" />
     <link rel="stylesheet" type="text/css" href="./libs/dc.js-3.1.8/dc.css" />
     <script src="./libs/d3/d3.js"></script>
     <script src="./libs/crossfilter-1.3.12/crossfilter.js"></script>
     <script src="./libs/dc.js-3.1.8/dc.js"></script>
-    <style>
-
+    <!-- <style>
         .row:after {
             content: "";
             display: table;
-            clear:both;
+            clear: both;
         }
 
         .column {
             float: left;
-            width: 400px;
+            width: 300px;
         }
 
-        #patient-timeline {
+        .event-filter {
             float: left;
             width: 800px;
             background-color: #eeeeee;
         }
-        #patient-event-category {
-            float: left;
-            width: 200px;
-            background-color: #eeeeee;
-        }
-        #patient-event-key {
-            float: left;
-            width: 200px;
-            background-color: #eeeeee;
-        }
-    </style>
+
+    </style> -->
 </head>
 
 <body>
-    <div class="container">
-        <div class="row">
+    <section class="section">
+        <div class="container">
+            <h1 class="title"> Patient-vis </h1>
+            <h2 class="subtitle"> <strong>patient-centered</strong> clinical data visualization tool</h2>
+        </div>
+    </section>
+    <section class="section">
+        <div class="container">
             <div id="patient-list"> Patient List </div>
             <div id="patient-info"> Patient Information </div>
         </div>
-        <div class="row">
-            <div id="patient-timeline"> TimeLine <br></div>
-            <div id="patient-event-category"> Event type <br> </div>
-            <div id="patient-event-key"> Event sub-type <br> </div>
-        </div>
-        <div class="row">
-            <div id="patient-vitals"> Vitals <br>
-                <div class="column">
-                    <div id="patient-vitals0"> </div>
-                    <div id="patient-vitals1"> </div>
-                    <div id="patient-vitals2"> </div>
-                    <div id="patient-vitals3"> </div>
+    </section>
+    <section class="section">
+        <div class="container">
+
+            <nav class="level">
+                <div class="level-item has-text-centered">
+                    <div class="event-filter" id="patient-timeline"> Event TimeLine <br></div>
+                    <div class="event-filter" id="patient-event-category"> Event type <br> </div>
+                    <div class="event-filter" id="patient-event-key"> Event sub-type <br> </div>
+                    <div class="event-filter" id="patient-event-normal"> Event importance <br> </div>
                 </div>
-                <div class="column">
-                    <div id="patient-vitals4"> </div>
-                    <div id="patient-vitals5"> </div>
-                    <div id="patient-vitals6"> </div>
-                    <div id="patient-vitals7"> </div>
+            </nav>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+
+            <div class="tile is-ancestor">
+                <div class="tile is-3 is-vertical">
+                    <div id="patient-vitals0"> Temperature </div>
+                    <div id="patient-vitals1"> Heart Rate </div>
+                    <div id="patient-vitals2"> Systolic blood pressure </div>
+                    <div id="patient-vitals3"> Diastolic blood pressure </div>
+                </div>
+                <div class="tile is-3 is-vertical">
+                    <div id="patient-vitals4"> Mean blood pressure </div>
+                    <div id="patient-vitals5"> Respiratory rate </div>
+                    <div id="patient-vitals6"> Oxygen saturation </div>
+                    <div id="patient-vitals7"> Urine output </div>
+                </div>
+                <div class="tile is-6 is-vertical">
+                    <div id="patient-labs">Labs </div>
+                    <!-- <div id="patient-notes"> Notes </div> -->
                 </div>
             </div>
-            <div id="patient-labs">Labs </div>
-            <div id="patient-notes"> Notes </div>
         </div>
-    </div>
+
+    </section>
+
     <script>
 
         // Possible categories of events
@@ -76,8 +91,15 @@
             "Mean blood pressure", "Respiratory rate",
             "Oxygen saturation", "Urine output"];
         var vitalUnits = ["C", "bpm", "mmHg", "mmHg", "mmHg", "bpm", "%", ""];
-        var vitalMins = [30, 40, 80, 40, 60, 10, 70, 0];
-        var vitalMaxs = [40, 160, 200, 100, 150, 40, 140, 1000];
+        var vitalMins = [36, 60, 90, 60, 80, 12, 80, 0];
+        var vitalMaxs = [38, 100, 120, 80, 120, 20, 100, 1000];
+        var vitalDefault = [37, 80, 105, 70, 100, 16, 90, 500]; // Default value used in null value.
+        // Small deviation added to default to recognize this value.
+        var minorDeviation = 0.00001;
+        vitalDefault = vitalDefault.map(function (d) {
+            return d + minorDeviation;
+        })
+
 
 
         // Definition of charts
@@ -85,10 +107,12 @@
         var patientTimeLine = dc.barChart('#patient-timeline');
         var patientEventCategory = dc.pieChart('#patient-event-category');
         var patientEventKey = dc.pieChart('#patient-event-key');
+        var patientEventNormal = dc.pieChart('#patient-event-normal');
+
 
         var patientVitals = vitals.map(function (d, i) {
             // Create a chart for each vital
-            return dc.lineChart('#patient-vitals' + i);
+            return nonzeroMin(dc.lineChart('#patient-vitals' + i));
         });
         var patientLabs = dc.dataTable('#patient-labs');
         // var patientNotes = dc.dataTable('#patient-notes');
@@ -150,7 +174,7 @@
             );
 
             patientTimeLine
-                .width(800)
+                .width(600)
                 .height(200)
                 .transitionDuration(1000)
                 .margins({ top: 0, bottom: 20, left: 40, right: 40 })
@@ -193,6 +217,7 @@
                 .dimension(categoryDimension)
                 .group(categoryGroup)
                 .label(function (d) {
+                    console.log(d);
                     return d.category;
                 })
                 .renderLabel(true)
@@ -210,6 +235,32 @@
                 .radius(80)
                 .dimension(keyDimension)
                 .group(keyGroup)
+                .label(function (d) {
+                    return d.key;
+                })
+                .renderLabel(true)
+                .innerRadius(40);
+
+            /* patient vitals by if normal of not */
+            var normalDimension = ndx.dimension(function (d) {
+                if (d.category == "Vitals") {
+                    vitalIdx = vitals.findIndex(function (value) { return (value == d.key); });
+                    if ((d.value_num > vitalMaxs[vitalIdx]) || (d.value_num < vitalMins[vitalIdx]))
+                        return "Abnormal";
+                    else
+                        return "Normal";
+                }
+                else
+                    return "Other";
+            })
+            var normalGroup = normalDimension.group();
+
+            patientEventNormal
+                .width(180)
+                .height(180)
+                .radius(80)
+                .dimension(normalDimension)
+                .group(normalGroup)
                 .label(function (d) {
                     return d.key;
                 })
@@ -237,25 +288,24 @@
                         if (v.key == d) {
                             p.sum -= v.value_num;
                             p.count -= 1;
-                            if (p.count == 0)
-                            {
-                                p.average = 0;
+                            if (p.count == 0) {
+                                p.average = vitalDefault[i];
                             }
-                            else
-                            {
+                            else {
                                 p.average = p.sum / p.count;
                             }
                         }
                         return p;
                     },
                     function () {
-                        return { sum: 0, count: 0, average: 0 };
+                        return { sum: 0, count: 0, average: vitalDefault[i] };
                     }
                 )
 
+
                 patientVitals[i]
 
-                    .width(400)
+                    .width(300)
                     .height(100)
                     .margins({ top: 10, bottom: 20, left: 40, right: 10 })
                     .dimension(minuteDimension)
@@ -265,11 +315,13 @@
                         return d.dd;
                     }), d3.max(events, function (d) { return d.dd; })]))
                     .y(d3.scaleLinear().domain([vitalMins[i], vitalMaxs[i]]))
-                    .renderHorizontalGridLines(true)
 
+                    .renderDataPoints(true)
+                    .renderHorizontalGridLines(true)
                     .brushOn(false)
-                    .yAxisLabel(vitals[i])
                     .elasticX(true)
+                    .elasticY(true)
+                    .yAxisPadding((vitalMaxs[i] - vitalMins[i]) / 10)
 
                     .group(removeNullValue(vitalByMinuteGroup, i))
                     .valueAccessor(function (d) {
@@ -277,7 +329,7 @@
                     })
 
                 patientVitals[i].yAxis().ticks(5);
-                patientVitals[i].xAxis().ticks(8);
+                patientVitals[i].xAxis().ticks(6);
 
             });
 
@@ -317,10 +369,22 @@
             return {
                 all: function () {
                     return group.all().filter(function (d) {
-                        return d.value.average !== 0;
+                        return d.value.average !== vitalDefault[i];
                     })
                 }
             }
+        }
+
+        function nonzeroMin(chart) {
+            dc.override(chart, 'yAxisMin', function () {
+                var min = d3.min(chart.data(), function (layer) {
+                    return d3.min(layer.values, function (p) {
+                        return p.y + p.y0;
+                    });
+                });
+                return dc.utils.subtract(min, chart.yAxisPadding());
+            });
+            return chart;
         }
     </script>
 </body>
