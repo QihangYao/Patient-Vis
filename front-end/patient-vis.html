@@ -237,7 +237,14 @@
                         if (v.key == d) {
                             p.sum -= v.value_num;
                             p.count -= 1;
-                            p.average = p.sum / p.count;
+                            if (p.count == 0)
+                            {
+                                p.average = 0;
+                            }
+                            else
+                            {
+                                p.average = p.sum / p.count;
+                            }
                         }
                         return p;
                     },
