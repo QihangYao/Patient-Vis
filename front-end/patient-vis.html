@@ -4,54 +4,68 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title> Patient-Vis </title>
-    <link rel="stylesheet" href="./libs/bulma-0.8.0/css/bulma.css" />
+    <link rel="stylesheet" href="./mystyles.css" />
     <link rel="stylesheet" type="text/css" href="./libs/dc.js-3.1.8/dc.css" />
     <script src="./libs/d3/d3.js"></script>
     <script src="./libs/crossfilter-1.3.12/crossfilter.js"></script>
     <script src="./libs/dc.js-3.1.8/dc.js"></script>
-    <!-- <style>
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
 
-        .column {
-            float: left;
-            width: 300px;
-        }
-
-        .event-filter {
-            float: left;
-            width: 800px;
-            background-color: #eeeeee;
-        }
-
-    </style> -->
 </head>
 
 <body>
-    <section class="section">
+    <section class="section has-background-info">
         <div class="container">
-            <h1 class="title"> Patient-vis </h1>
-            <h2 class="subtitle"> <strong>patient-centered</strong> clinical data visualization tool</h2>
+            <h1 class="title has-text-white"> Patient-vis </h1>
+            <h2 class="subtitle has-text-light"> patient-centered clinical data visualization tool</h2>
         </div>
     </section>
     <section class="section">
         <div class="container">
-            <div id="patient-list"> Patient List </div>
-            <div id="patient-info"> Patient Information </div>
+            <div id="patient-info">
+                <p class="title is-5">Patient Information</p>
+                <table class="table is-narrow">
+                    <tr>
+                        <th> Name </th>
+                        <td id="patient-name"> </td>
+                    </tr>
+                    <tr>
+                        <th> Gender </th>
+                        <td id="patient-gender"> </td>
+                    </tr>
+                    <tr>
+                        <th> Date of birth </th>
+                        <td id="patient-dob"> </td>
+                    </tr>
+                    <tr>
+                        <th> ICU type </th>
+                        <td id="patient-icutype"> </td>
+                    </tr>
+                    <tr>
+                        <th> Ethnicity </th>
+                        <td id="patient-ethnic"> </td>
+                    </tr>
+                    <tr>
+                        <th> Diagnosis </th>
+                        <td id="patient-diagnosis"> </td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </section>
-    <section class="section">
+    <section class="section has-background-light">
         <div class="container">
-
+            <p class="title is-5"> Event Filteres</p>
+            <p class="subtitle is-6"> Interactive filters to assist information mining</p>
             <nav class="level">
-                <div class="level-item has-text-centered">
-                    <div class="event-filter" id="patient-timeline"> Event TimeLine <br></div>
-                    <div class="event-filter" id="patient-event-category"> Event type <br> </div>
-                    <div class="event-filter" id="patient-event-key"> Event sub-type <br> </div>
-                    <div class="event-filter" id="patient-event-normal"> Event importance <br> </div>
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-timeline"> Event TimeLine <br></div>
+                    </div>
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-event-category"> Event type <br> </div>
+                        <div class="event-filter" id="patient-event-key"> Event sub-type <br> </div>
+                        <div class="event-filter" id="patient-event-normal"> Event importance <br> </div>
+                    </div>
                 </div>
             </nav>
         </div>
@@ -59,30 +73,91 @@
 
     <section class="section">
         <div class="container">
-
-            <div class="tile is-ancestor">
-                <div class="tile is-3 is-vertical">
-                    <div id="patient-vitals0"> Temperature </div>
-                    <div id="patient-vitals1"> Heart Rate </div>
-                    <div id="patient-vitals2"> Systolic blood pressure </div>
-                    <div id="patient-vitals3"> Diastolic blood pressure </div>
+            <p class="title is-5"> Vitals</p>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals0"> Temperature (C) <br></div>
+                        <div class="event-filter" id="patient-vitals1"> Heart Rate (bpm) <br></div>
+                    </div>
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals2"> Systolic blood pressure (mmHg) <br></div>
+                        <div class="event-filter" id="patient-vitals3"> Diastolic blood pressure (mmHg) <br></div>
+                    </div>
                 </div>
-                <div class="tile is-3 is-vertical">
-                    <div id="patient-vitals4"> Mean blood pressure </div>
-                    <div id="patient-vitals5"> Respiratory rate </div>
-                    <div id="patient-vitals6"> Oxygen saturation </div>
-                    <div id="patient-vitals7"> Urine output </div>
+            </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals4"> Mean blood pressure (mmHg) <br></div>
+                        <div class="event-filter" id="patient-vitals5"> Respiratory rate (bpm) <br></div>
+                    </div>
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals6"> Oxygen saturation (%) <br></div>
+                        <div class="event-filter" id="patient-vitals7"> Urine output <br></div>
+                    </div>
                 </div>
-                <div class="tile is-6 is-vertical">
-                    <div id="patient-labs">Labs </div>
-                    <!-- <div id="patient-notes"> Notes </div> -->
-                </div>
-            </div>
+            </nav>
         </div>
 
     </section>
 
+    <section class="section">
+        <div class="container">
+            <p class="title is-5"> Events </p>
+            <div class="table-container">
+                <table class="table is-narrow is-hoverable" id="patient-labs"> </table>
+            </div>
+            <!-- <div id="patient-notes"> Notes </div> -->
+        </div>
+    </section>
+
+
     <script>
+
+
+        const unitData = {
+            'Albumin': { 'units': 'g/dL', 'low': 3.5, 'high': 6 },
+            'Anion Gap': { 'units': 'mEq/L' },
+            'Bicarbonate': { 'units': 'mEq/L', 'low': 22, 'high': 32 },
+            'Bilirubin': { 'units': 'mg/dL', 'low': 0.1, 'high': 1.2 },
+            'Blood urea nitrogen': { 'units': 'mEq/L', 'low': 6, 'high': 20 },
+            'Calcium': { 'units': 'mg/dL', 'low': 8.4, 'high': 10.3 },
+            'Chloride': { 'units': 'mEq/L', 'low': 96, 'high': 108 },
+            'Cholesterol': { 'units': 'mg/dL', 'low': 40, 'high': 240 },
+            'Creatinine': { 'units': 'mEq/L', 'low': 0.4, 'high': 1.1 },
+            'Diastolic blood pressure': { 'units': 'mmHg', 'low': 60, 'high': 90 },
+            'Fraction inspired oxygen': { 'units': '%' },
+            'Glucose': { 'units': 'mg/dL', 'low': 70, 'high': 105 },
+            'Heart Rate': { 'units': 'bpm', 'low': 50, 'high': 100 },
+            'Hematocrit': { 'units': '%', 'low': 37, 'high': 52 },
+            'Hemoglobin': { 'units': 'g/dL', 'low': 11.2, 'high': 15.7 },
+            'Lactate': { 'units': 'mmol/dL', 'low': .5, 'high': 2 },
+            'Lymphocytes': { 'units': 'm/uL', 'low': 1, 'high': 3 },
+            'Magnesium': { 'units': 'mg/dL', 'low': 1.6, 'high': 2.6 },
+            'Mean blood pressure': { 'units': 'mmHg' },
+            'Monocytes': { 'units': 'M/uL', 'low': .2, 'high': 1 },
+            'Neutrophilis': { 'units': 'M/uL', 'low': 2, 'high': 7 },
+            'Oxygen saturation': { 'units': '%', 'low': 94, 'high': 100 },
+            'Partial pressure of CO2': { 'units': 'mmHg', 'low': 38, 'high': 42 },
+            'Partial pressure of O2': { 'units': 'mmHg', 'low': 75, 'high': 100 },
+            'pH': { 'low': 7.35, 'high': 7.45 },
+            'Phosphate': { 'units': 'mg/dL', 'low': 2.7, 'high': 4.5 },
+            'Platelets': { 'units': 'K/uL', 'low': 150, 'high': 400 },
+            'Potassium': { 'units': 'mEq/L', 'low': 3.3, 'high': 5.1 },
+            'Prothrombin time': { 'units': 'secL', 'low': 11, 'high': 14 },
+            'Partial thromboplastin time': { 'units': 'sec', 'low': 25, 'high': 35 },
+            'Red blood cell count': { 'units': 'M/uL', 'low': 42, 'high': 6.1 },
+            'Respiratory rate': { 'units': 'bpm', 'low': 12, 'high': 25 },
+            'Sodium': { 'units': 'mEq/L', 'low': 133, 'high': 145 },
+            'Systolic blood pressure': { 'units': 'mmHg', 'low': 95, 'high': 140 },
+            'Temperature': { 'units': 'C', 'low': 36.6, 'high': 37 },
+            'Troponin-I': { 'units': 'ng/mL' },
+            'Troponin-T': { 'units': 'ng/mL', 'low': 0, 'high': 0.01 },
+            'Urine output': {},
+            'Weight': { 'units': 'kg', 'low': 40, 'high': 240 },
+            'White blood cell count': { 'units': 'K/uL', 'low': 5, 'high': 10 },
+        };
 
         // Possible categories of events
         var categories = ["Vitals", "Other", "Labs"];
@@ -121,12 +196,30 @@
 
             console.log(data);
 
+
+            // Load patient information
+            if (data.gender == "F") {
+                document.getElementById("patient-name").innerHTML += "Mary";
+                document.getElementById("patient-gender").innerHTML += "Female";
+            }
+            else {
+                document.getElementById("patient-name").innerHTML += "Bob";
+                document.getElementById("patient-gender").innerHTML += "Male";
+            }
+            document.getElementById("patient-dob").innerHTML += data.dob;
+            document.getElementById("patient-icutype").innerHTML += data.icu_type;
+            document.getElementById("patient-ethnic").innerHTML += data.ethnicity;
+            document.getElementById("patient-diagnosis").innerHTML += data.diagnosis;
+
+
             /* Here we deal with events */
 
             // Parse the datetime for events
             var dateFormatSpecifier = '%Y-%m-%d %H:%M:%S UTC';
             var dateFormat = d3.timeFormat(dateFormatSpecifier);
             var dateFormatParser = d3.timeParse(dateFormatSpecifier);
+
+            var dateDisplayFormat = d3.timeFormat("%m/%d %H:%M:%S");
 
             var events = data.events;
             events.forEach(function (d) {
@@ -175,7 +268,7 @@
 
             patientTimeLine
                 .width(600)
-                .height(200)
+                .height(150)
                 .transitionDuration(1000)
                 .margins({ top: 0, bottom: 20, left: 40, right: 40 })
                 .dimension(hourlyDimension)
@@ -189,7 +282,7 @@
                 .xUnits(d3.timeHours)
                 .elasticY(true)
                 .renderHorizontalGridLines(true)
-                .legend(dc.legend().x(700).y(10).itemHeight(13).gap(5))
+                .legend(dc.legend().x(500).y(10).itemHeight(13).gap(5))
                 .yAxisLabel("Event Count")
 
                 .group(countByHourCategoryGroup, categories[0], function (d) {
@@ -211,17 +304,16 @@
             var categoryGroup = categoryDimension.group();
 
             patientEventCategory
-                .width(180)
-                .height(180)
-                .radius(80)
+                .width(150)
+                .height(150)
+                .radius(60)
                 .dimension(categoryDimension)
                 .group(categoryGroup)
                 .label(function (d) {
-                    console.log(d);
                     return d.category;
                 })
                 .renderLabel(true)
-                .innerRadius(40);
+                .innerRadius(20);
 
             /* patient event by sub-categroy */
             var keyDimension = ndx.dimension(function (d) {
@@ -230,16 +322,16 @@
             var keyGroup = keyDimension.group();
 
             patientEventKey
-                .width(180)
-                .height(180)
-                .radius(80)
+                .width(150)
+                .height(150)
+                .radius(60)
                 .dimension(keyDimension)
                 .group(keyGroup)
                 .label(function (d) {
                     return d.key;
                 })
                 .renderLabel(true)
-                .innerRadius(40);
+                .innerRadius(20);
 
             /* patient vitals by if normal of not */
             var normalDimension = ndx.dimension(function (d) {
@@ -256,16 +348,16 @@
             var normalGroup = normalDimension.group();
 
             patientEventNormal
-                .width(180)
-                .height(180)
-                .radius(80)
+                .width(150)
+                .height(150)
+                .radius(60)
                 .dimension(normalDimension)
                 .group(normalGroup)
                 .label(function (d) {
                     return d.key;
                 })
                 .renderLabel(true)
-                .innerRadius(40);
+                .innerRadius(20);
 
 
             /* patient vitals by Minutes */
@@ -341,7 +433,7 @@
                 .dimension(timeDimension)
                 .columns([{
                     label: 'Datetime', format: function (d) {
-                        return dateFormat(d.dd);
+                        return dateDisplayFormat(d.dd);
                     }
                 }, {
                     label: 'Measurement', format: function (d) {
@@ -351,11 +443,25 @@
                     label: 'Value', format: function (d) {
                         return d.value_num;
                     }
+                }, {
+                    label: 'Unit', format: function (d) {
+                        if (d.key in unitData)
+                        {
+                            return unitData[d.key].units;
+                        }
+                        return "";
+                    }
                 }])
                 .sortBy(function (d) {
                     return d.dd;
                 })
                 .order(d3.ascending)
+
+            // .on("renderlet", function (table) {
+            //     // table.selectAll(".dc-table-group").classed("table is-narrow", true)
+            //     // table.selectAll(".dc-table-row").classed("table is-narrow is-hoverable", true)
+
+            // })
 
 
 
