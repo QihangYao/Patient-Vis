@@ -14,10 +14,15 @@
 
 <body>
     <section class="section has-background-info">
-        <div class="container">
+        <div class="container1">
             <h1 class="title has-text-white"> Patient-vis </h1>
             <h2 class="subtitle has-text-light"> patient-centered clinical data visualization tool</h2>
         </div>
+        <div id="container2">
+    <div class="nav left">Selected Patient</div>
+    <div id="categoryselect"></div>
+    <div class="nav right"></div>
+</div>
     </section>
     <section class="section">
         <div class="container">
@@ -78,26 +83,76 @@
                 <div class="level-left">
                     <div class="level-item has-text-centered">
                         <div class="event-filter" id="patient-vitals0"> Temperature (C) <br></div>
-                        <div class="event-filter" id="patient-vitals1"> Heart Rate (bpm) <br></div>
                     </div>
-                    <div class="level-item has-text-centered">
-                        <div class="event-filter" id="patient-vitals2"> Systolic blood pressure (mmHg) <br></div>
-                        <div class="event-filter" id="patient-vitals3"> Diastolic blood pressure (mmHg) <br></div>
-                    </div>
-                </div>
             </nav>
             <nav class="level">
                 <div class="level-left">
                     <div class="level-item has-text-centered">
-                        <div class="event-filter" id="patient-vitals4"> Mean blood pressure (mmHg) <br></div>
-                        <div class="event-filter" id="patient-vitals5"> Respiratory rate (bpm) <br></div>
+                        <div class="event-filter" id="patient-vitals1"> Temperature (C) <br></div>
                     </div>
-                    <div class="level-item has-text-centered">
-                        <div class="event-filter" id="patient-vitals6"> Oxygen saturation (%) <br></div>
-                        <div class="event-filter" id="patient-vitals7"> Urine output <br></div>
-                    </div>
-                </div>
             </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals2"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals3"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals4"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals5"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals6"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals7"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals8"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals9"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals10"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+
+            <nav class="level">
+                <div class="level-left">
+                    <div class="level-item has-text-centered">
+                        <div class="event-filter" id="patient-vitals11"> Temperature (C) <br></div>
+                    </div>
+            </nav>
+
         </div>
 
     </section>
@@ -161,10 +216,10 @@
 
         // Possible categories of events
         var categories = ["Vitals", "Other", "Labs"];
-        var vitals = ["Temperature", "Heart Rate",
+        /*var vitals = ["Temperature", "Heart Rate",
             "Systolic blood pressure", "Diastolic blood pressure",
             "Mean blood pressure", "Respiratory rate",
-            "Oxygen saturation", "Urine output"];
+            "Oxygen saturation", "Urine output"];*/
         var vitalUnits = ["C", "bpm", "mmHg", "mmHg", "mmHg", "bpm", "%", ""];
         var vitalMins = [36, 60, 90, 60, 80, 12, 80, 0];
         var vitalMaxs = [38, 100, 120, 80, 120, 20, 100, 1000];
@@ -176,7 +231,26 @@
         })
 
 
+        var patient_index=0;
+        //modify this after getting the real data
+        var patient_indices=[0,1,3,4,5,6,7,8,9,10];
 
+
+
+
+        var menu = d3.select("#categoryselect");
+
+         menu.append("select")
+          .attr("id","categoryMenu")
+          .selectAll("option")
+          .data(patient_indices)
+          .enter()
+          .append("option")
+          .attr("value",function(d,i){return i;})
+          .text(function(d,i){return i;});
+
+
+        function drawgraph(patient_index){
         // Definition of charts
         // var patientList = dc.dataTable('#dc-data-table');
         var patientTimeLine = dc.barChart('#patient-timeline');
@@ -185,31 +259,77 @@
         var patientEventNormal = dc.pieChart('#patient-event-normal');
 
 
+       /* var patientVitals = vitals.map(function (d, i) {
+            // Create a chart for each vital
+            return nonzeroMin(dc.lineChart('#patient-vitals' + i));
+        });*/
+
+
+        var patientLabs = dc.dataTable('#patient-labs');
+        // var patientNotes = dc.dataTable('#patient-notes');
+
+        d3.json('test1.json').then(function (data) {
+           //  var data = data_origin[patient_index]
+            console.log(data);
+
+
+        var nest = d3.nest()
+        .key(function(d){return d.key;})
+        .entries(data.events);
+
+        nest = nest.sort((a, b) => (a.values.length > b.values.length) ? 1 : -1).reverse();
+        var select_nest=[];
+    
+        for (var index=0; index< 12; index++)
+        {
+            select_nest.push(nest[index]);
+
+
+        }
+
+
+       
+        console.log(select_nest);//check that works
+
+        var vitals= select_nest.map(function(d){return d.key;});
+        
+
+        //console.log(vitals_category); // check
+
+        console.log(vitals);
+        //Works!!!!!!!
         var patientVitals = vitals.map(function (d, i) {
             // Create a chart for each vital
             return nonzeroMin(dc.lineChart('#patient-vitals' + i));
         });
-        var patientLabs = dc.dataTable('#patient-labs');
-        // var patientNotes = dc.dataTable('#patient-notes');
+       // console.log(patientVitals);
 
-        d3.json('test.json').then(function (data) {
 
-            console.log(data);
+
+
+
+
+
+
+
+
+
+
 
 
             // Load patient information
             if (data.gender == "F") {
-                document.getElementById("patient-name").innerHTML += "Mary";
-                document.getElementById("patient-gender").innerHTML += "Female";
+                document.getElementById("patient-name").innerHTML = "Mary";
+                document.getElementById("patient-gender").innerHTML = "Female";
             }
             else {
-                document.getElementById("patient-name").innerHTML += "Bob";
-                document.getElementById("patient-gender").innerHTML += "Male";
+                document.getElementById("patient-name").innerHTML = "Bob";
+                document.getElementById("patient-gender").innerHTML = "Male";
             }
-            document.getElementById("patient-dob").innerHTML += data.dob;
-            document.getElementById("patient-icutype").innerHTML += data.icu_type;
-            document.getElementById("patient-ethnic").innerHTML += data.ethnicity;
-            document.getElementById("patient-diagnosis").innerHTML += data.diagnosis;
+            document.getElementById("patient-dob").innerHTML = data.dob;
+            document.getElementById("patient-icutype").innerHTML = data.icu_type;
+            document.getElementById("patient-ethnic").innerHTML = data.ethnicity;
+            document.getElementById("patient-diagnosis").innerHTML = data.diagnosis;
 
 
             /* Here we deal with events */
@@ -222,6 +342,7 @@
             var dateDisplayFormat = d3.timeFormat("%m/%d %H:%M:%S");
 
             var events = data.events;
+            
             events.forEach(function (d) {
                 d.dd = dateFormatParser(d.chart_time);
                 d.hour = d3.timeHour(d.dd);
@@ -364,8 +485,10 @@
             vitals.forEach(function (d, i) {
 
                 var minuteDimension = ndx.dimension(function (d) {
+
                     return d.minute;
                 });
+
 
                 var vitalByMinuteGroup = minuteDimension.group().reduce(
                     function (p, v) {
@@ -393,7 +516,8 @@
                         return { sum: 0, count: 0, average: vitalDefault[i] };
                     }
                 )
-
+                document.getElementById('patient-vitals' + i).innerHTML= d;
+                //document.getElementById("patient-diagnosis").innerHTML = data.diagnosis;
 
                 patientVitals[i]
 
@@ -469,7 +593,32 @@
             console.log("Here");
             dc.renderAll();
 
-        })
+        })//This is the end of draw function
+        }
+
+        drawgraph(patient_index)
+
+        menu.on("change", function()
+        {
+
+
+        d3.selectAll("#patient").remove();
+        var selection = d3.select(this)
+        .select("select")
+        .property("value");
+
+        index= + selection;
+
+        console.log(index);
+
+        drawgraph(index);
+
+
+
+        }); //This is the end of the menu.on function
+
+
+
 
         function removeNullValue(group, i) {
             return {
