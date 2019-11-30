@@ -14,15 +14,26 @@
 
 <body>
     <section class="section has-background-info">
-        <div class="container1">
-            <h1 class="title has-text-white"> Patient-vis </h1>
-            <h2 class="subtitle has-text-light"> patient-centered clinical data visualization tool</h2>
+        <div class="container">
+            <nav class='level'>
+                <div class="level-left">
+                    <div class="level-item">
+                        <h1 class="title has-text-white"> Patient-vis </h1>
+                    </div>
+                    <div class="level-item">
+                        <h2 class="subtitle has-text-light"> patient-centered clinical data visualization tool</h2>
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <p class="title has-text-white is-5"> Selected Patient</p>
+                    </div>
+                    <div class="level-item">
+                        <div class="select" id="categoryselect"></div>
+                    </div>
+                </div>
+            </nav>
         </div>
-        <div id="container2">
-    <div class="nav left">Selected Patient</div>
-    <div id="categoryselect"></div>
-    <div class="nav right"></div>
-</div>
     </section>
     <section class="section">
         <div class="container">
@@ -84,48 +95,32 @@
                     <div class="level-item has-text-centered">
                         <div class="event-filter" id="patient-vitals0"> Temperature (C) <br></div>
                     </div>
-            </nav>
-            <nav class="level">
-                <div class="level-left">
                     <div class="level-item has-text-centered">
                         <div class="event-filter" id="patient-vitals1"> Temperature (C) <br></div>
                     </div>
-            </nav>
-            <nav class="level">
-                <div class="level-left">
                     <div class="level-item has-text-centered">
                         <div class="event-filter" id="patient-vitals2"> Temperature (C) <br></div>
                     </div>
-            </nav>
-            <nav class="level">
-                <div class="level-left">
                     <div class="level-item has-text-centered">
                         <div class="event-filter" id="patient-vitals3"> Temperature (C) <br></div>
                     </div>
+                </div>
             </nav>
             <nav class="level">
                 <div class="level-left">
                     <div class="level-item has-text-centered">
                         <div class="event-filter" id="patient-vitals4"> Temperature (C) <br></div>
                     </div>
-            </nav>
-            <nav class="level">
-                <div class="level-left">
                     <div class="level-item has-text-centered">
                         <div class="event-filter" id="patient-vitals5"> Temperature (C) <br></div>
                     </div>
-            </nav>
-            <nav class="level">
-                <div class="level-left">
                     <div class="level-item has-text-centered">
                         <div class="event-filter" id="patient-vitals6"> Temperature (C) <br></div>
                     </div>
-            </nav>
-            <nav class="level">
-                <div class="level-left">
                     <div class="level-item has-text-centered">
                         <div class="event-filter" id="patient-vitals7"> Temperature (C) <br></div>
                     </div>
+                </div>
             </nav>
 
 
@@ -166,7 +161,7 @@
             'Lactate': { 'units': 'mmol/dL', 'low': .5, 'high': 2 },
             'Lymphocytes': { 'units': 'm/uL', 'low': 1, 'high': 3 },
             'Magnesium': { 'units': 'mg/dL', 'low': 1.6, 'high': 2.6 },
-            'Mean blood pressure': { 'units': 'mmHg' },
+            'Mean blood pressure': { 'units': 'mmHg', 'low': 70, 'high': 100 },
             'Monocytes': { 'units': 'M/uL', 'low': .2, 'high': 1 },
             'Neutrophilis': { 'units': 'M/uL', 'low': 2, 'high': 7 },
             'Oxygen saturation': { 'units': '%', 'low': 94, 'high': 100 },
@@ -183,446 +178,375 @@
             'Sodium': { 'units': 'mEq/L', 'low': 133, 'high': 145 },
             'Systolic blood pressure': { 'units': 'mmHg', 'low': 95, 'high': 140 },
             'Temperature': { 'units': 'C', 'low': 36.6, 'high': 37 },
-            'Troponin-I': { 'units': 'ng/mL' },
+            'Temperature Fahrenheit': { 'units': 'degree', 'low': 97.9, 'high': 98.6 },
             'Troponin-T': { 'units': 'ng/mL', 'low': 0, 'high': 0.01 },
             'Urine output': {},
             'Weight': { 'units': 'kg', 'low': 40, 'high': 240 },
             'White blood cell count': { 'units': 'K/uL', 'low': 5, 'high': 10 },
         };
 
+        const synonymDictionary = {
+            'O2 saturation pulseoxymetry': 'Oxygen saturation',
+            'Respiratory Rate': 'Respiratory rate',
+            'Non Invasive Blood Pressure mean': 'Mean blood pressure',
+            'Non Invasive Blood Pressure diastolic': 'Diastolic blood pressure',
+            'Non Invasive Blood Pressure systolic': 'Systolic blood pressure',
+            'Glucose finger stick': 'Glucose'
+        }
+
+        const maxNumVitals = 8;
+
         // Possible categories of events
-        var categories = ["Vitals", "Other", "Labs"];
-        /*var vitals = ["Temperature", "Heart Rate",
-            "Systolic blood pressure", "Diastolic blood pressure",
-            "Mean blood pressure", "Respiratory rate",
-            "Oxygen saturation", "Urine output"];*/
-        var vitalUnits = ["C", "bpm", "mmHg", "mmHg", "mmHg", "bpm", "%", ""];
-        var vitalMins = [36, 60, 90, 60, 80, 12, 80, 0];
-        var vitalMaxs = [38, 100, 120, 80, 120, 20, 100, 1000];
-        var vitalDefault = [37, 80, 105, 70, 100, 16, 90, 500]; // Default value used in null value.
-        // Small deviation added to default to recognize this value.
-        var minorDeviation = 0.00001;
-        vitalDefault = vitalDefault.map(function (d) {
-            return d + minorDeviation;
-        })
+        const categories = ["Vitals", "Other", "Labs"];
 
-
-        var patient_index=0;
+        var patientIndex = 0;
         //modify this after getting the real data
-        var patient_indices=[0,1,3,4,5,6,7,8,9,10];
-
-
-
+        var patientIndices = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10];
 
         var menu = d3.select("#categoryselect");
 
-         menu.append("select")
-          .attr("id","categoryMenu")
-          .selectAll("option")
-          .data(patient_indices)
-          .enter()
-          .append("option")
-          .attr("value",function(d,i){return i;})
-          .text(function(d,i){return i;});
+        menu.append("select")
+            .attr("id", "categoryMenu")
+            .selectAll("option")
+            .data(patientIndices)
+            .enter()
+            .append("option")
+            .attr("value", function (d, i) { return i; })
+            .text(function (d, i) { return i; });
 
 
-        function drawgraph(patient_index){
-        // Definition of charts
-        // var patientList = dc.dataTable('#dc-data-table');
-        var patientTimeLine = dc.barChart('#patient-timeline');
-        var patientEventCategory = dc.pieChart('#patient-event-category');
-        var patientEventKey = dc.pieChart('#patient-event-key');
-        var patientEventNormal = dc.pieChart('#patient-event-normal');
+        function drawVisualization(patientIndex) {
+            // Definition of charts
+            var patientTimeLine = dc.barChart('#patient-timeline');
+            var patientEventCategory = dc.pieChart('#patient-event-category');
+            var patientEventKey = dc.pieChart('#patient-event-key');
+            var patientEventNormal = dc.pieChart('#patient-event-normal');
+            var patientLabs = dc.dataTable('#patient-labs');
 
+            d3.json('test1.json').then(function (data) {
 
-       /* var patientVitals = vitals.map(function (d, i) {
-            // Create a chart for each vital
-            return nonzeroMin(dc.lineChart('#patient-vitals' + i));
-        });*/
+                console.log(data);
 
-
-        var patientLabs = dc.dataTable('#patient-labs');
-        // var patientNotes = dc.dataTable('#patient-notes');
-
-        d3.json('test1.json').then(function (data) {
-           //  var data = data_origin[patient_index]
-            console.log(data);
-
-
-        var nest = d3.nest()
-        .key(function(d){return d.key;})
-        .entries(data.events);
-        
-
-        nest = nest.sort((a, b) => (a.values.length > b.values.length) ? 1 : -1).reverse();
-        var select_nest=[];
-    
-        for (var index=0; index< 8; index++)
-        {
-            select_nest.push(nest[index]);
-
-
-        }
-
-
-       
-        console.log(select_nest);//check that works
-
-        var vitals= select_nest.map(function(d){
-
-
-            return d.key;});
-        var nest2 = d3.nest()
-        .key(function(d){return d.key;})
-        .key(function(d){return d.unitname;})
-        .entries(data.events);
-        
-        
-        
-        
-
-        //console.log(vitals_category); // check
-
-        console.log(vitals);
-        var unit_list=[]
-
-
-        for (var index=0; index< vitals.length; index++)
-       
-         {   var unit_matched = nest2.find(function(d) { 
-                return d.key == vitals[index];})
-             unit_list.push(unit_matched.values[0].key);
-
-         };
-            console.log(unit_list);
-        //Works!!!!!!!
-        var patientVitals = vitals.map(function (d, i) {
-            // Create a chart for each vital
-            return nonzeroMin(dc.lineChart('#patient-vitals' + i));
-        });
-       // console.log(patientVitals);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            // Load patient information
-            if (data.gender == "F") {
-                document.getElementById("patient-name").innerHTML = "Mary";
-                document.getElementById("patient-gender").innerHTML = "Female";
-            }
-            else {
-                document.getElementById("patient-name").innerHTML = "Bob";
-                document.getElementById("patient-gender").innerHTML = "Male";
-            }
-            document.getElementById("patient-dob").innerHTML = data.dob;
-            document.getElementById("patient-icutype").innerHTML = data.icu_type;
-            document.getElementById("patient-ethnic").innerHTML = data.ethnicity;
-            document.getElementById("patient-diagnosis").innerHTML = data.diagnosis;
-
-
-            /* Here we deal with events */
-
-            // Parse the datetime for events
-            var dateFormatSpecifier = '%Y-%m-%d %H:%M:%S UTC';
-            var dateFormat = d3.timeFormat(dateFormatSpecifier);
-            var dateFormatParser = d3.timeParse(dateFormatSpecifier);
-
-            var dateDisplayFormat = d3.timeFormat("%m/%d %H:%M:%S");
-
-            var events = data.events;
-            
-            events.forEach(function (d) {
-                d.dd = dateFormatParser(d.chart_time);
-                d.hour = d3.timeHour(d.dd);
-                d.minute = d3.timeMinute(d.dd);
-                d.day = d3.timeDay(d.dd);
-            });
-
-            var ndx = crossfilter(events);
-            var all = ndx.groupAll();
-
-
-            /* Patient timeline by hours */
-
-            var hourlyDimension = ndx.dimension(function (d) {
-                return d.hour;
-            });
-
-            var countByHourCategoryGroup = hourlyDimension.group().reduce(
-                function (p, v) {
-                    ++p.count;
-                    categories.forEach(function (d, i) {
-                        if (v.category == d) {
-                            p.countByCategory[i] += 1;
-                        }
-                    })
-                    return p;
-                },
-                function (p, v) {
-                    --p.count;
-                    categories.forEach(function (d, i) {
-                        if (v.category == d) {
-                            p.countByCategory[i] -= 1;
-                        }
-                    })
-                    return p;
-                },
-                function () {
-                    return {
-                        count: 0,
-                        countByCategory: [0, 0, 0]
-                    };
-                }
-            );
-
-            patientTimeLine
-                .width(600)
-                .height(150)
-                .transitionDuration(1000)
-                .margins({ top: 0, bottom: 20, left: 40, right: 40 })
-                .dimension(hourlyDimension)
-                .mouseZoomable(true)
-
-                .x(d3.scaleTime().domain([d3.min(events, function (d) {
-                    return d.dd;
-                }), d3.max(events, function (d) { return d.dd; })]))
-                .round(d3.timeHour.round)
-                .alwaysUseRounding(true)
-                .xUnits(d3.timeHours)
-                .elasticY(true)
-                .renderHorizontalGridLines(true)
-                .legend(dc.legend().x(500).y(10).itemHeight(13).gap(5))
-                .yAxisLabel("Event Count")
-
-                .group(countByHourCategoryGroup, categories[0], function (d) {
-                    return d.value.countByCategory[0];
-                })
-                .stack(countByHourCategoryGroup, categories[1], function (d) {
-                    return d.value.countByCategory[1];
-                })
-                .stack(countByHourCategoryGroup, categories[2], function (d) {
-                    return d.value.countByCategory[2];
-                })
-                .centerBar(true)
-                .gap(1);
-
-            /* patient event by categroy */
-            var categoryDimension = ndx.dimension(function (d) {
-                return d.category;
-            });
-            var categoryGroup = categoryDimension.group();
-
-            patientEventCategory
-                .width(150)
-                .height(150)
-                .radius(60)
-                .dimension(categoryDimension)
-                .group(categoryGroup)
-                .label(function (d) {
-                    return d.category;
-                })
-                .renderLabel(true)
-                .innerRadius(20);
-
-            /* patient event by sub-categroy */
-            var keyDimension = ndx.dimension(function (d) {
-                return d.key;
-            });
-            var keyGroup = keyDimension.group();
-
-            patientEventKey
-                .width(150)
-                .height(150)
-                .radius(60)
-                .dimension(keyDimension)
-                .group(keyGroup)
-                .label(function (d) {
-                    return d.key;
-                })
-                .renderLabel(true)
-                .innerRadius(20);
-
-            /* patient vitals by if normal of not */
-            var normalDimension = ndx.dimension(function (d) {
-                if (d.category == "Vitals") {
-                    vitalIdx = vitals.findIndex(function (value) { return (value == d.key); });
-                    if ((d.value_num > vitalMaxs[vitalIdx]) || (d.value_num < vitalMins[vitalIdx]))
-                        return "Abnormal";
-                    else
-                        return "Normal";
-                }
-                else
-                    return "Other";
-            })
-            var normalGroup = normalDimension.group();
-
-            patientEventNormal
-                .width(150)
-                .height(150)
-                .radius(60)
-                .dimension(normalDimension)
-                .group(normalGroup)
-                .label(function (d) {
-                    return d.key;
-                })
-                .renderLabel(true)
-                .innerRadius(20);
-
-
-            /* patient vitals by Minutes */
-            vitals.forEach(function (d, i) {
-
-                var minuteDimension = ndx.dimension(function (d) {
-
-                    return d.minute;
+                // Align the event name
+                data.events.forEach(function (d) {
+                    if (d.key in synonymDictionary) {
+                        d.key = synonymDictionary[d.key]
+                    }
                 });
 
+                // Outside the range of vitals are other
+                data.events.forEach(function (d) {
+                    if (!(d.key in unitData) && (d.category == 'Vitals')) {
+                        d.category = "Other";
+                    }
+                });
 
-                var vitalByMinuteGroup = minuteDimension.group().reduce(
+                /* Select vitals with top frequencies */
+                var vitals = data.events.filter(function (d) { return d.key in unitData; })
+                var vitalFrequency = d3.nest()
+                    .key(function (d) { return d.key; })
+                    .entries(vitals);
+                vitalFrequency = vitalFrequency.sort((a, b) => (a.values.length > b.values.length) ? 1 : -1).reverse();
+                var selectedVitalKeys = vitalFrequency.slice(0, Math.min(maxNumVitals, vitalFrequency.length)).map(function (d) {
+                    return d.key;
+                });
+
+                // Retrieve unit list
+                var nest2 = d3.nest()
+                    .key(function (d) { return d.key; })
+                    .key(function (d) { return d.unitname; })
+                    .entries(data.events);
+
+
+                var patientVitals = selectedVitalKeys.map(function (d, i) {
+                    // Create a chart for each vital
+                    return nonzeroMin(dc.lineChart('#patient-vitals' + i));
+                });
+
+                // Load patient information
+                if (data.gender == "F") {
+                    document.getElementById("patient-name").innerHTML = "Mary";
+                    document.getElementById("patient-gender").innerHTML = "Female";
+                }
+                else {
+                    document.getElementById("patient-name").innerHTML = "Bob";
+                    document.getElementById("patient-gender").innerHTML = "Male";
+                }
+                document.getElementById("patient-dob").innerHTML = data.dob;
+                document.getElementById("patient-icutype").innerHTML = data.icu_type;
+                document.getElementById("patient-ethnic").innerHTML = data.ethnicity;
+                document.getElementById("patient-diagnosis").innerHTML = data.diagnosis;
+
+
+                /* Here we deal with events */
+
+                // Parse the datetime for events
+                var dateFormatSpecifier = '%Y-%m-%d %H:%M:%S UTC';
+                var dateFormat = d3.timeFormat(dateFormatSpecifier);
+                var dateFormatParser = d3.timeParse(dateFormatSpecifier);
+
+                var dateDisplayFormat = d3.timeFormat("%m/%d %H:%M:%S");
+
+                var events = data.events;
+
+                events.forEach(function (d) {
+                    d.dd = dateFormatParser(d.chart_time);
+                    d.hour = d3.timeHour(d.dd);
+                    d.minute = d3.timeMinute(d.dd);
+                    d.day = d3.timeDay(d.dd);
+                });
+
+                var ndx = crossfilter(events);
+                var all = ndx.groupAll();
+
+
+                /* Patient timeline by hours */
+
+                var hourlyDimension = ndx.dimension(function (d) {
+                    return d.hour;
+                });
+
+                var countByHourCategoryGroup = hourlyDimension.group().reduce(
                     function (p, v) {
-                        if (v.key == d) {
-                            p.sum += v.value_num;
-                            p.count += 1;
-                            p.average = p.sum / p.count;
-                        }
+                        ++p.count;
+                        categories.forEach(function (d, i) {
+                            if (v.category == d) {
+                                p.countByCategory[i] += 1;
+                            }
+                        })
                         return p;
                     },
                     function (p, v) {
-                        if (v.key == d) {
-                            p.sum -= v.value_num;
-                            p.count -= 1;
-                            if (p.count == 0) {
-                                p.average = vitalDefault[i];
+                        --p.count;
+                        categories.forEach(function (d, i) {
+                            if (v.category == d) {
+                                p.countByCategory[i] -= 1;
                             }
-                            else {
-                                p.average = p.sum / p.count;
-                            }
-                        }
+                        })
                         return p;
                     },
                     function () {
-                        return { sum: 0, count: 0, average: vitalDefault[i] };
+                        return {
+                            count: 0,
+                            countByCategory: [0, 0, 0]
+                        };
                     }
-                )
-                document.getElementById('patient-vitals' + i).innerHTML= d + " / unit: " + unit_list[i] ;
-                //document.getElementById("patient-diagnosis").innerHTML = data.diagnosis;
+                );
 
-                patientVitals[i]
+                patientTimeLine
+                    .width(600)
+                    .height(150)
+                    .transitionDuration(1000)
+                    .margins({ top: 0, bottom: 20, left: 40, right: 40 })
+                    .dimension(hourlyDimension)
+                    .mouseZoomable(true)
 
-                    .width(300)
-                    .height(100)
-                    .margins({ top: 10, bottom: 20, left: 40, right: 10 })
-                    .dimension(minuteDimension)
-
-                    // .rangeChart(patientTimeLine)
                     .x(d3.scaleTime().domain([d3.min(events, function (d) {
                         return d.dd;
                     }), d3.max(events, function (d) { return d.dd; })]))
-                    .y(d3.scaleLinear().domain([vitalMins[i], vitalMaxs[i]]))
-
-                    .renderDataPoints(true)
-                    .renderHorizontalGridLines(true)
-                    .brushOn(false)
-                    .elasticX(true)
+                    .round(d3.timeHour.round)
+                    .alwaysUseRounding(true)
+                    .xUnits(d3.timeHours)
                     .elasticY(true)
-                    .yAxisPadding((vitalMaxs[i] - vitalMins[i]) / 10)
+                    .renderHorizontalGridLines(true)
+                    .legend(dc.legend().x(500).y(10).itemHeight(13).gap(5))
+                    .yAxisLabel("Event Count")
 
-                    .group(removeNullValue(vitalByMinuteGroup, i))
-                    .valueAccessor(function (d) {
-                        return d.value.average;
+                    .group(countByHourCategoryGroup, categories[0], function (d) {
+                        return d.value.countByCategory[0];
                     })
+                    .stack(countByHourCategoryGroup, categories[1], function (d) {
+                        return d.value.countByCategory[1];
+                    })
+                    .stack(countByHourCategoryGroup, categories[2], function (d) {
+                        return d.value.countByCategory[2];
+                    })
+                    .centerBar(true)
+                    .gap(1);
 
-                patientVitals[i].yAxis().ticks(5);
-                patientVitals[i].xAxis().ticks(6);
+                /* patient event by categroy */
+                var categoryDimension = ndx.dimension(function (d) {
+                    return d.category;
+                });
+                var categoryGroup = categoryDimension.group();
 
-            });
+                patientEventCategory
+                    .width(150)
+                    .height(150)
+                    .radius(60)
+                    .dimension(categoryDimension)
+                    .group(categoryGroup)
+                    .label(function (d) {
+                        return d.category;
+                    })
+                    .renderLabel(true)
+                    .innerRadius(20);
 
-            /* Patient lab events */
-            var timeDimension = ndx.dimension(function (d) {
-                return d.dd;
-            });
-            patientLabs
-                .dimension(timeDimension)
-                .columns([{
-                    label: 'Datetime', format: function (d) {
-                        return dateDisplayFormat(d.dd);
-                    }
-                }, {
-                    label: 'Measurement', format: function (d) {
+                /* patient event by sub-categroy */
+                var keyDimension = ndx.dimension(function (d) {
+                    return d.key;
+                });
+                var keyGroup = keyDimension.group();
+
+                patientEventKey
+                    .width(150)
+                    .height(150)
+                    .radius(60)
+                    .dimension(keyDimension)
+                    .group(keyGroup)
+                    .label(function (d) {
                         return d.key;
+                    })
+                    .renderLabel(true)
+                    .innerRadius(20);
+
+                /* patient vitals by if normal of not */
+                var normalDimension = ndx.dimension(function (d) {
+                    if (d.key in unitData) {
+                        if ((d.value_num > unitData[d.key].high) || (d.value_num < unitData[d.key].low))
+                            return "Abnormal";
+                        else
+                            return "Normal";
                     }
-                }, {
-                    label: 'Value', format: function (d) {
-                        return d.value_num;
-                    }
-                }, {
-                    label: 'Unit', format: function (d) {
-                        if (d.key in unitData)
-                        {
-                            return unitData[d.key].units;
-                        }
-                        return "";
-                    }
-                }])
-                .sortBy(function (d) {
-                    return d.dd;
+                    else
+                        return "Other";
                 })
-                .order(d3.ascending)
+                var normalGroup = normalDimension.group();
 
-            // .on("renderlet", function (table) {
-            //     // table.selectAll(".dc-table-group").classed("table is-narrow", true)
-            //     // table.selectAll(".dc-table-row").classed("table is-narrow is-hoverable", true)
+                patientEventNormal
+                    .width(150)
+                    .height(150)
+                    .radius(60)
+                    .dimension(normalDimension)
+                    .group(normalGroup)
+                    .label(function (d) {
+                        return d.key;
+                    })
+                    .renderLabel(true)
+                    .innerRadius(20);
 
-            // })
 
+                /* patient vitals by Minutes */
+                selectedVitalKeys.forEach(function (d, i) {
 
+                    var minuteDimension = ndx.dimension(function (d) {
 
+                        return d.minute;
+                    });
 
-            console.log("Here");
-            dc.renderAll();
+                    var vitalByMinuteGroup = minuteDimension.group().reduce(
+                        function (p, v) {
+                            if (v.key == d) {
+                                p.sum += v.value_num;
+                                p.count += 1;
+                                p.average = p.sum / p.count;
+                            }
+                            return p;
+                        },
+                        function (p, v) {
+                            if (v.key == d) {
+                                p.sum -= v.value_num;
+                                p.count -= 1;
+                                if (p.count == 0) {
+                                    p.average = unitData[d].low + unitData[d].high + 0.00001;
+                                }
+                                else {
+                                    p.average = p.sum / p.count;
+                                }
+                            }
+                            return p;
+                        },
+                        function () {
+                            return { sum: 0, count: 0, average: unitData[d].low + unitData[d].high + 0.00001 };
+                        }
+                    )
+                    document.getElementById('patient-vitals' + i).innerHTML = d + " (" + unitData[d].units + ") <br/>";
 
-        })//This is the end of draw function
+                    patientVitals[i]
+
+                        .width(300)
+                        .height(100)
+                        .margins({ top: 10, bottom: 20, left: 40, right: 10 })
+                        .dimension(minuteDimension)
+
+                        // .rangeChart(patientTimeLine)
+                        .x(d3.scaleTime().domain([d3.min(events, function (d) {
+                            return d.dd;
+                        }), d3.max(events, function (d) { return d.dd; })]))
+                        .y(d3.scaleLinear().domain([unitData[d].low, unitData[d].high]))
+
+                        .renderDataPoints(true)
+                        .renderHorizontalGridLines(true)
+                        .brushOn(false)
+                        .elasticX(true)
+                        .elasticY(true)
+                        .yAxisPadding((unitData[d].high - unitData[d].low) / 10)
+
+                        .group(removeNullValue(vitalByMinuteGroup, d))
+                        .valueAccessor(function (d) {
+                            return d.value.average;
+                        })
+
+                    patientVitals[i].yAxis().ticks(5);
+                    patientVitals[i].xAxis().ticks(6);
+
+                });
+
+                /* Patient lab events */
+                var timeDimension = ndx.dimension(function (d) {
+                    return d.dd;
+                });
+                patientLabs
+                    .dimension(timeDimension)
+                    .columns([{
+                        label: 'Datetime', format: function (d) {
+                            return dateDisplayFormat(d.dd);
+                        }
+                    }, {
+                        label: 'Measurement', format: function (d) {
+                            return d.key;
+                        }
+                    }, {
+                        label: 'Value', format: function (d) {
+                            return d.value_num;
+                        }
+                    }, {
+                        label: 'Unit', format: function (d) {
+                            if (d.key in unitData) {
+                                return unitData[d.key].units;
+                            }
+                            return "";
+                        }
+                    }])
+                    .sortBy(function (d) {
+                        return d.dd;
+                    })
+                    .order(d3.ascending)
+
+                dc.renderAll();
+
+            })
         }
 
-        drawgraph(patient_index)
+        drawVisualization(patientIndex)
 
-        menu.on("change", function()
-        {
+        menu.on("change", function () {
 
+            d3.selectAll("#patient").remove();
+            var selection = d3.select(this)
+                .select("select")
+                .property("value");
 
-        d3.selectAll("#patient").remove();
-        var selection = d3.select(this)
-        .select("select")
-        .property("value");
+            index = + selection;
 
-        index= + selection;
+            drawVisualization(index);
+        });
 
-        console.log(index);
-
-        drawgraph(index);
-
-
-
-        }); //This is the end of the menu.on function
-
-
-
-
-        function removeNullValue(group, i) {
+        function removeNullValue(group, key) {
             return {
                 all: function () {
                     return group.all().filter(function (d) {
-                        return d.value.average !== vitalDefault[i];
+                        return d.value.average !== unitData[key].low + unitData[key].high + 0.00001;
                     })
                 }
             }
