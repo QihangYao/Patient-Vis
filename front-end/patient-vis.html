@@ -127,31 +127,7 @@
                         <div class="event-filter" id="patient-vitals7"> Temperature (C) <br></div>
                     </div>
             </nav>
-            <nav class="level">
-                <div class="level-left">
-                    <div class="level-item has-text-centered">
-                        <div class="event-filter" id="patient-vitals8"> Temperature (C) <br></div>
-                    </div>
-            </nav>
-            <nav class="level">
-                <div class="level-left">
-                    <div class="level-item has-text-centered">
-                        <div class="event-filter" id="patient-vitals9"> Temperature (C) <br></div>
-                    </div>
-            </nav>
-            <nav class="level">
-                <div class="level-left">
-                    <div class="level-item has-text-centered">
-                        <div class="event-filter" id="patient-vitals10"> Temperature (C) <br></div>
-                    </div>
-            </nav>
 
-            <nav class="level">
-                <div class="level-left">
-                    <div class="level-item has-text-centered">
-                        <div class="event-filter" id="patient-vitals11"> Temperature (C) <br></div>
-                    </div>
-            </nav>
 
         </div>
 
@@ -276,11 +252,12 @@
         var nest = d3.nest()
         .key(function(d){return d.key;})
         .entries(data.events);
+        
 
         nest = nest.sort((a, b) => (a.values.length > b.values.length) ? 1 : -1).reverse();
         var select_nest=[];
     
-        for (var index=0; index< 12; index++)
+        for (var index=0; index< 8; index++)
         {
             select_nest.push(nest[index]);
 
@@ -291,12 +268,33 @@
        
         console.log(select_nest);//check that works
 
-        var vitals= select_nest.map(function(d){return d.key;});
+        var vitals= select_nest.map(function(d){
+
+
+            return d.key;});
+        var nest2 = d3.nest()
+        .key(function(d){return d.key;})
+        .key(function(d){return d.unitname;})
+        .entries(data.events);
+        
+        
+        
         
 
         //console.log(vitals_category); // check
 
         console.log(vitals);
+        var unit_list=[]
+
+
+        for (var index=0; index< vitals.length; index++)
+       
+         {   var unit_matched = nest2.find(function(d) { 
+                return d.key == vitals[index];})
+             unit_list.push(unit_matched.values[0].key);
+
+         };
+            console.log(unit_list);
         //Works!!!!!!!
         var patientVitals = vitals.map(function (d, i) {
             // Create a chart for each vital
@@ -516,7 +514,7 @@
                         return { sum: 0, count: 0, average: vitalDefault[i] };
                     }
                 )
-                document.getElementById('patient-vitals' + i).innerHTML= d;
+                document.getElementById('patient-vitals' + i).innerHTML= d + " / unit: " + unit_list[i] ;
                 //document.getElementById("patient-diagnosis").innerHTML = data.diagnosis;
 
                 patientVitals[i]
