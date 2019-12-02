@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> Patient-Vis </title>
+
+  <script src="{{ url_for('static', filename='d3/d3.js')}}"></script>
+  <script src="{{ url_for('static', filename='crossfilter-1.3.12/crossfilter.js')}}"></script>
+  <script src="{{ url_for('static', filename='dc.js-3.1.8/dc.js')}}"></script>
+  <script src="{{ url_for('static', filename='jquery/jquery.min.js')}}"></script>
+
+</head>
+<style>
+  body {
+    font-family: Arial;
+  }
+
+  input[type=text],
+  select {
+    width: 50%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+
+  input[type=submit] {
+    width: 50%;
+    background-color: #0099cc;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  input[type=submit]:hover {
+    background-color: #0099cc;
+  }
+
+  div.container {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
+  }
+</style>
+
+<body>
+
+  <h3>Infomation Searching</h3>
+  <p>Please input a patient's id below</p>
+
+  <div class="container">
+    <form method="post">
+      <label for="patientid">Patient ID</label>
+      <input type="text" id="patient_id" name="Patientd ID" placeholder="Input a patient's id..">
+      <input type="submit" id='button_submit_patient' value="Submit">
+    </form>
+  </div>
+
+
+  <div class="container">
+    <form method="post">
+
+
+      <label for="country">Hospital Admissions</label>
+      <select id="hadm" name="hadm">
+      </select>
+
+      <input type="submit" id="button_submit_hadm" value="Confirm">
+    </form>
+  </div>
+
+  <script>
+
+    $("#button_submit_patient").click(function (e) {
+      e.preventDefault();
+      var value = $("#patient_id").val();
+      patient_id = value;
+      $.ajax({
+        type: "POST",
+        url: "{{ url_for('patient_info_query') }}",
+        data: JSON.stringify({ "text": value }),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+          addselect(data);
+        }
+      });
+    });
+
+    var select = document.getElementById("hadm");
+    var patient_id = 123;
+
+    function addselect(data) {
+      //console.log(data);
+      $("#hadm").find('option')
+        .remove()
+        .end();
+      for (var i = 0; i < data.length; i++) {
+        var new_option = document.createElement("option");
+        var new_option_text = document.createTextNode(data[i]);
+        new_option.appendChild(new_option_text);
+        select.appendChild(new_option);
+      }
+    }
+
+    $("#hadm").change(function () {
+      var val = select.options[select.selectedIndex].text;
+    });
+
+    $("#button_submit_hadm").click(function (e) {
+      e.preventDefault();
+      var hadm_id = $("#hadm").val();
+      $.redirectPost("{{url_for('patient_query')}}", { p_id: patient_id, h_id: hadm_id });
+    })
+
+    $.extend(
+      {
+        redirectPost: function (location, args) {
+          var form = '';
+          $.each(args, function (key, value) {
+            value = value.split('"').join('\"')
+            form += '<input type="hidden" name="' + key + '" value="' + value + '">';
+          });
+          $('<form action="' + location + '" method="POST">' + form + '</form>').appendTo($(document.body)).submit();
+        }
+      });
+
+  </script>
