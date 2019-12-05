@@ -1,7 +1,7 @@
 """ Mimic-III database """
 
 # Whether to use local database
-LOCAL_DB = True
+LOCAL_DB = False
 # If local database is available, following configuration
 # will be used to access MIMIC-III database.
 LOCAL_DB_NAME = "mimic"
@@ -11,13 +11,13 @@ LOCAL_HOSTNAME = "localhost"
 LOCAL_PORT = "5432"
 
 # Whether to use athena database
-ATHENA_DB = False
+ATHENA_DB = True
 # If athena database is specified to be used, use following
 # configurations
-AWS_ACCESS_KEY_ID = "AKIAUXPGEYVLHD4JGCSV"
-AWS_SECRET_ACCESS_KEY = "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"
-S3_STAGING_DIR = "s3://mimiciii-query-result/"
-REGION_NAME = "us-east-1"
+AWS_ACCESS_KEY_ID = None
+AWS_SECRET_ACCESS_KEY = None
+S3_STAGING_DIR = None
+REGION_NAME = None
 
 # Local database and athena database shouldn't be used together
 assert not all((LOCAL_DB, ATHENA_DB))
