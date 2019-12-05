@@ -11,7 +11,7 @@ LOCAL_HOSTNAME = "localhost"
 LOCAL_PORT = "5432"
 
 # Whether to use athena database
-ATHENA_DB = True
+ATHENA_DB = False
 # If athena database is specified to be used, use following
 # configurations
 AWS_ACCESS_KEY_ID = None
@@ -19,32 +19,33 @@ AWS_SECRET_ACCESS_KEY = None
 S3_STAGING_DIR = None
 REGION_NAME = None
 
-# Local database and athena database shouldn't be used together
-assert not all((LOCAL_DB, ATHENA_DB))
+def get_db_conn():
 
-conn = None
-# Get the database connection based on previous settings.
-if LOCAL_DB:
+    # Local database and athena database shouldn't be used together
+    assert not all((LOCAL_DB, ATHENA_DB))
+    
+    # Get the database connection based on previous settings.
+    if LOCAL_DB:
 
-    import psycopg2
+        import psycopg2
 
-    conn = psycopg2.connect(
-        "dbname=" + LOCAL_DB_NAME +
-        " user=" + LOCAL_DB_USER +
-        " host=" + LOCAL_HOSTNAME +
-        " password=" + LOCAL_DB_PWD +
-        " port=" + LOCAL_PORT  + " options=--search_path=mimiciii"
-    )
-elif ATHENA_DB:
+        return psycopg2.connect(
+            "dbname=" + LOCAL_DB_NAME +
+            " user=" + LOCAL_DB_USER +
+            " host=" + LOCAL_HOSTNAME +
+            " password=" + LOCAL_DB_PWD +
+            " port=" + LOCAL_PORT  + " options=--search_path=mimiciii"
+        )
+    elif ATHENA_DB:
 
-    import pyathena
+        import pyathena
 
-    conn = pyathena.connect(
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-        s3_staging_dir=S3_STAGING_DIR,
-        region_name=REGION_NAME,
-        schema_name="mimiciii",
-    )
-else:
-    raise ValueError("Configuration file error.")
+        return pyathena.connect(
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            s3_staging_dir=S3_STAGING_DIR,
+            region_name=REGION_NAME,
+            schema_name="mimiciii",
+        )
+    else:
+        return None

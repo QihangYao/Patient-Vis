@@ -3,7 +3,6 @@
 
 """ Demo for reading dataset from MIMIC-III in Athena """
 
-from pyathena import connect
 from datetime import datetime
 import pandas as pd
 import numpy as np

@@ -5,13 +5,16 @@ Created on Wed Nov 27 11:05:31 2019
 @author: zhn
 """
 import os
+import json
 from flask import Flask, url_for, request, render_template, flash, jsonify, redirect
 from backend import create_patient_dict
-from mimic_db import conn
+from mimic_db import get_db_conn
 
 app = Flask(__name__)
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
+conn = get_db_conn()
 
 @app.route("/patient_info_query", methods=["GET", "POST"])
 def patient_info_query():
@@ -72,7 +75,11 @@ def initialize():
     except OSError:
         pass
 
-    return render_template("query-remake.html")
+    if conn:
+        return render_template("query-remake.html")
+    else:
+        flash("No database configuration in backend configuration, displaying demo data.")
+        return render_template("patient-vis.html", patient_data=open("test.json","r").read())
 
 
 if __name__ == "__main__":

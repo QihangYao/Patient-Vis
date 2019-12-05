@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title> Patient-Vis </title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mystyles.css')}}" />
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dc.js-3.1.8/dc.css')}}" />
     <script src="{{ url_for('static', filename='d3/d3.js')}}"></script>
@@ -29,7 +30,21 @@
             </nav>
         </div>
     </section>
+
     <section class="section">
+        <article class="message">
+            {% block content %}
+            <div class="message-body">
+                {% for message in get_flashed_messages() %}
+                <div class="alert alert-warning">
+                    {{ message }}
+                </div>
+                {% endfor %}
+
+                {% block page_content %}{% endblock %}
+            </div>
+            {% endblock %}
+        </article>
         <div class="container">
             <div id="patient-info">
                 <p class="title is-5">Patient Information</p>
@@ -193,7 +208,7 @@
         // Possible categories of events
         const categories = ["Vitals", "Other", "Labs"];
 
-        var data = {{patient_data|tojson|safe}};
+        var data = {{ patient_data| tojson | safe}};
         data = JSON.parse(data);
 
         function drawVisualization() {
