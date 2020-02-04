@@ -1,7 +1,5 @@
 # Patient-Vis
 
-Repository for group `7Under6`'s course project for Georgia Tech CSE 6242.
-
 ## DESCRIPTION
 
 Patient-vis is a patient-centered clinical data visualizaiton tool, featuring timeline scaling, multi-condition filtering, abnormal event extraction, and flexible vital ordering. This tool is designed with the hope to reduce the doctor's cognitive load when thry explore patient's data, while maintaining the information density and fast information retrieval.
